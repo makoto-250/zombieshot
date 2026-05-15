@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ビルドシステムなし。`index.html` をブラウザで直接開くだけ。ローカルサーバーで動かす場合は任意（例: `python -m http.server`）。横向き（landscape）のみ対応。
 
+## Git運用
+- コードを変更・実装したら必ずgit add, commit, pushまで行うこと
+- コミットメッセージは変更内容を簡潔に日本語で書くこと
+- pushは`git push origin main`で行うこと
+
 ## アーキテクチャ概要
 
 バニラJS製のゾンビディフェンスゲーム。モジュールはすべてIIFE（即時実行関数式）パターン。
