@@ -78,7 +78,7 @@ const Defense = (() => {
     runner:      { hp: 30,  spd: 1.35, fly: false, w: 18, h: 28, col: '#CC5500', atk: 4,  gold: 1  },
     brute:       { hp: 220, spd: 0.28, fly: false, w: 34, h: 48, col: '#3A0A55', atk: 12, gold: 5  },
     flyer:       { hp: 48,  spd: 0.95, fly: true,  w: 28, h: 22, col: '#1A4A1A', atk: 8,  gold: 2  },
-    boss_walker: { hp: 540, spd: 0.35, fly: false, w: 28, h: 44, col: '#8B1A1A', atk: 7,  gold: 30 },
+    boss_walker: { hp: 540, spd: 0.35, fly: false, w: 28, h: 44, col: '#8B1A1A', atk: 7,  gold: 40 },
   };
 
   function buildWave(day) {
