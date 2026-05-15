@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ZOMBIESHOT</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- トップ画面 -->
+  <div id="screen-top" class="screen active">
+    <div class="bg-layer"></div>
+    <div class="fog"></div>
+
+    <!-- 設定ボタン -->
+    <button class="setting-btn" onclick="openSettings()">⚙</button>
+
+    <div class="title-area">
+      <div class="title-sub">絶望の荒野で戦え</div>
+      <h1 class="title-main">ZOMBIE<span>SHOT</span></h1>
+    </div>
+
+    <div class="menu-area">
+      <button class="menu-btn btn-defense" onclick="navigate('defense')">
+        <span class="btn-icon">⚔</span>
+        <span class="btn-label">防衛</span>
+        <span class="btn-desc" id="top-defense-day">次: 1日目</span>
+        <span class="btn-desc btn-desc-max" id="top-defense-max">最高: 1日目</span>
+      </button>
+      <button class="menu-btn btn-base" onclick="navigate('base')">
+        <span class="btn-icon">🏚</span>
+        <span class="btn-label">拠点</span>
+        <span class="btn-desc" id="top-gold">G 0</span>
+      </button>
+      <button class="menu-btn btn-explore" onclick="navigate('explore')">
+        <span class="btn-icon">🗺</span>
+        <span class="btn-label">探索</span>
+        <span class="btn-desc">物資を集めろ</span>
+      </button>
+    </div>
+
+    <div class="blood-bar"></div>
+  </div>
+
+  <!-- 設定モーダル -->
+  <div id="modal-settings" class="modal-backdrop hidden" onclick="closeSettings(event)">
+    <div class="modal-box">
+      <div class="modal-title">設定</div>
+      <button class="modal-delete-btn" onclick="confirmDelete()">データを削除する</button>
+      <button class="modal-close-btn" onclick="closeSettings()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- 削除確認モーダル -->
+  <div id="modal-confirm" class="modal-backdrop hidden" onclick="closeConfirm(event)">
+    <div class="modal-box">
+      <div class="modal-title confirm-title">本当にデータを<br>消してよろしいですか？</div>
+      <div class="modal-confirm-btns">
+        <button class="modal-yes-btn" onclick="deleteData()">はい</button>
+        <button class="modal-no-btn"  onclick="closeConfirm()">いいえ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 防衛画面 -->
+  <div id="screen-defense" class="screen">
+    <div id="defense-hud">
+      <div class="hud-left">
+        <button class="hud-back" onclick="navigate('top')">◀</button>
+        <span id="hud-day">防衛 1日目</span>
+      </div>
+      <div class="hud-center">
+        <span class="hp-label">拠点HP</span>
+        <div class="hp-bar-outer">
+          <div id="hud-hp-bar" class="hp-bar-inner"></div>
+        </div>
+        <span id="hud-hp-text">100 / 100</span>
+      </div>
+      <div class="hud-right">
+        <button id="speed-btn" class="speed-btn hidden" onclick="Defense.toggleSpeed()">2x</button>
+        <span class="gold-display">G<span id="hud-gold">0</span></span>
+      </div>
+    </div>
+
+    <canvas id="defense-canvas"></canvas>
+
+    <div id="defense-bottom">
+      <button id="bomb-btn" class="bomb-btn">
+        <span class="bomb-icon">💣</span>
+        <span class="bomb-label">ボム</span>
+        <span id="bomb-count" class="bomb-count">×3</span>
+      </button>
+    </div>
+
+    <div id="defense-overlay" class="defense-overlay hidden">
+      <div class="overlay-box">
+        <h2 id="overlay-title"></h2>
+        <p  id="overlay-msg"></p>
+        <button class="overlay-btn" onclick="navigate('top')">タイトルへ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 拠点画面 -->
+  <div id="screen-base" class="screen">
+    <div class="base-header">
+      <button class="hud-back" onclick="navigate('top')">◀ 戻る</button>
+      <span class="base-title">拠点</span>
+      <span class="base-gold-disp">G <span id="base-gold">0</span></span>
+    </div>
+
+    <div class="base-body">
+      <!-- 拠点HPバー -->
+      <div class="base-hp-row">
+        <span class="base-hp-label">拠点HP</span>
+        <div class="hp-bar-outer"><div id="base-hp-bar" class="hp-bar-inner"></div></div>
+        <span id="base-hp-text">100 / 100</span>
+      </div>
+
+      <!-- カードグリッド -->
+      <div class="base-grid">
+
+        <!-- 拠点強化 -->
+        <div class="base-card">
+          <div class="bc-head">
+            <span class="bc-icon">🏰</span>
+            <span class="bc-name">拠点強化</span>
+            <span class="bc-lv">Lv<span id="lv-maxHp">0</span></span>
+          </div>
+          <div class="bc-eff">最大HP <strong id="eff-maxHp">100</strong></div>
+          <div class="bc-next">強化後 → +20HP</div>
+          <div class="bc-foot">
+            <span class="bc-cost"><span id="cost-maxHp">20</span>G</span>
+            <button class="bc-btn" id="btn-maxHp" onclick="BaseScreen.upgrade('maxHp')">強化</button>
+          </div>
+        </div>
+
+        <!-- 銃強化 -->
+        <div class="base-card">
+          <div class="bc-head">
+            <span class="bc-icon">🔫</span>
+            <span class="bc-name">銃強化</span>
+            <span class="bc-lv">Lv<span id="lv-atkPow">0</span></span>
+          </div>
+          <div class="bc-eff">攻撃力 <strong id="eff-atkPow">20</strong></div>
+          <div class="bc-next">強化後 → +5</div>
+          <div class="bc-foot">
+            <span class="bc-cost"><span id="cost-atkPow">15</span>G</span>
+            <button class="bc-btn" id="btn-atkPow" onclick="BaseScreen.upgrade('atkPow')">強化</button>
+          </div>
+        </div>
+
+        <!-- 修復率強化 -->
+        <div class="base-card">
+          <div class="bc-head">
+            <span class="bc-icon">⚙</span>
+            <span class="bc-name">修復率強化</span>
+            <span class="bc-lv">Lv<span id="lv-repairRate">0</span></span>
+          </div>
+          <div class="bc-eff"><strong id="eff-repairRate">10</strong>HP / 1G &nbsp; DEF <strong id="eff-baseDef">0</strong></div>
+          <div class="bc-next">強化後 → +1HP/G, DEF→+1</div>
+          <div class="bc-foot">
+            <span class="bc-cost"><span id="cost-repairRate">25</span>G</span>
+            <button class="bc-btn" id="btn-repairRate" onclick="BaseScreen.upgrade('repairRate')">強化</button>
+          </div>
+        </div>
+
+        <!-- 拠点修復 -->
+        <div class="base-card repair-card">
+          <div class="bc-head">
+            <span class="bc-icon">❤️</span>
+            <span class="bc-name">拠点修復</span>
+          </div>
+          <div class="bc-eff">修復率 <strong id="eff-repair-now">10</strong>HP/G</div>
+          <div class="bc-repair-info">
+            <span>不足HP: <strong id="repair-missing">0</strong></span>
+            <span>費用: <strong id="repair-cost">0</strong>G</span>
+          </div>
+          <div class="bc-foot">
+            <span class="bc-cost-note" id="repair-afford-note"></span>
+            <button class="bc-btn repair-btn" id="btn-repair" onclick="BaseScreen.repair()">修復</button>
+          </div>
+        </div>
+
+      </div><!-- /base-grid -->
+    </div><!-- /base-body -->
+  </div>
+
+  <!-- 探索画面 -->
+  <div id="screen-explore" class="screen">
+    <div class="base-header exp-header">
+      <button class="hud-back" onclick="navigate('top')">◀ 戻る</button>
+      <span class="base-title exp-title">探索</span>
+      <span class="base-gold-disp">G <span id="exp-gold">0</span></span>
+    </div>
+
+    <div class="exp-body">
+
+      <!-- 仲間を探す -->
+      <div class="exp-card">
+        <div class="exp-card-head">
+          <span class="exp-icon">🧑‍🤝‍🧑</span>
+          <div class="exp-card-titles">
+            <span class="exp-card-name">仲間を探す</span>
+            <span class="exp-card-sub">味方 +1人</span>
+          </div>
+          <span class="exp-lv-badge">Lv <span id="exp-ally-lv">0</span> / 4</span>
+        </div>
+        <div class="exp-card-eff">現在の味方: <strong><span id="exp-ally-count">1</span>人</strong></div>
+        <div class="exp-card-foot">
+          <span class="exp-cost"><span id="exp-ally-cost">100</span> G</span>
+          <button class="exp-btn" id="exp-ally-btn" onclick="ExploreScreen.buyAlly()">探す</button>
+        </div>
+      </div>
+
+      <!-- 爆弾を探す -->
+      <div class="exp-card">
+        <div class="exp-card-head">
+          <span class="exp-icon">💣</span>
+          <div class="exp-card-titles">
+            <span class="exp-card-name">爆弾を探す</span>
+            <span class="exp-card-sub">ボム +1個</span>
+          </div>
+          <span class="exp-lv-badge">Lv <span id="exp-bomb-lv">0</span> / 3</span>
+        </div>
+        <div class="exp-card-eff">現在のボム: <strong><span id="exp-bomb-count">0</span>個</strong></div>
+        <div class="exp-card-foot">
+          <span class="exp-cost"><span id="exp-bomb-cost">100</span> G</span>
+          <button class="exp-btn" id="exp-bomb-btn" onclick="ExploreScreen.buyBomb()">探す</button>
+        </div>
+      </div>
+
+      <!-- 武器を探す -->
+      <div class="exp-card">
+        <div class="exp-card-head">
+          <span class="exp-icon">🔫</span>
+          <div class="exp-card-titles">
+            <span class="exp-card-name">武器を探す</span>
+            <span class="exp-card-sub">攻撃範囲拡大</span>
+          </div>
+          <span class="exp-lv-badge">Lv <span id="exp-range-lv">0</span> / 4</span>
+        </div>
+        <div class="exp-card-eff">攻撃範囲: <strong><span id="exp-range-pct">80</span>%</strong></div>
+        <div class="exp-card-foot">
+          <span class="exp-cost"><span id="exp-range-cost">100</span> G</span>
+          <button class="exp-btn" id="exp-range-btn" onclick="ExploreScreen.buyRange()">探す</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2倍速チュートリアル -->
+  <div id="speed-tutorial" class="speed-tutorial hidden">
+    <div id="speed-tutorial-spotlight" class="speed-tutorial-spotlight"></div>
+    <div id="speed-tutorial-msg" class="speed-tutorial-msg">
+      2倍速モードが解放されました。<br>タップすると速度が2倍になります。
+    </div>
+  </div>
+
+  <!-- 会話イベントオーバーレイ -->
+  <div id="dialogue-overlay" class="dialogue-overlay hidden">
+    <div class="dialogue-container">
+      <div class="dialogue-bubble">
+        <p id="dialogue-text"></p>
+        <span class="dialogue-hint">TAP</span>
+      </div>
+      <div class="dialogue-char">
+        <img src="images/main_01_1.png" alt="">
+      </div>
+    </div>
+  </div>
+
+  <script src="defense.js"></script>
+  <script src="base.js"></script>
+  <script src="explore.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
